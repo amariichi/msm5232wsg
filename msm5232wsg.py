@@ -86,19 +86,20 @@ if __name__ == '__main__' :
         fout1.write(fxbheader)
 
         x = np.arange(32)
-        y = np.empty(32,dtype="int64")
+        y = np.empty(32)
         
         for i in range(1,16):
             for j in range(32):
                 y[j] = switch(i,0)*wav1(j) + switch(i,1)*wav2(j) + switch(i,2)*wav4(j) + switch(i,3)*wav8(j)
             y = y * 127/max(max(y),-min(y))
-            y = np.round(y)
             #print(y)
             #plt.bar(x,y)
             #plt.show()
             y = y + 127
-            list = y.astype(np.int64).tolist()
-
+            z = (y/254*255*2 + 1) // 2
+            y = y/254
+            list = y.astype(">f").tobytes()
+            blist = z.astype(np.uint8).tobytes()
             #------fxp output------
             fout1.write(fxpheader)
             if i > 9 :
@@ -111,8 +112,7 @@ if __name__ == '__main__' :
             fout1.write(ardrslrr)
             fout1.write(eightbits)
             fout1.write(filtervalue)
-            for j in range(32):
-                fout1.write(struct.pack(">f", list[j]/254))
+            fout1.write(list)
 
             #------wave for ELZ_1 output------
             fout2 = wave.Wave_write(dirname + "/" + "MSM5232Table" + "{0:02d}".format(i) + ".wav")
@@ -124,8 +124,7 @@ if __name__ == '__main__' :
                 "NONE",            # not compressed
                 "not compressed"   # not compressed
                 ))
-            for j in range(32):
-                fout2.writeframesraw(struct.pack("B", int(Decimal(list[j]/254*255).quantize(Decimal('0'), rounding=ROUND_HALF_UP))))
+            fout2.writeframesraw(blist)
             fout2.close()
 
         # dummy data of 16th fxp for the fxb file.
