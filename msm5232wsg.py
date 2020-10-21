@@ -6,7 +6,6 @@ import struct
 import wave
 import numpy as np
 from scipy.stats import norm
-from decimal import Decimal, ROUND_HALF_UP
 #import matplotlib.pyplot as plt
 
 def argumentsparser():
